@@ -70,6 +70,14 @@
                                         placeholder="Enter location"></textarea>
                                 </div>
 
+                                <!-- Profile Link -->
+
+                                <div class="mb-3">
+                                    <label class="form-label">Profile Link</label>
+                                    <textarea class="form-control" v-model="profile_link" rows="2"
+                                        placeholder="Enter Profile Link"></textarea>
+                                </div>
+
 
 
 
@@ -150,6 +158,7 @@ export default {
             phone_no: '',
             description: '',
             location: '',
+            profile_link: '',
             amount: '',
             qualified: false
         }
@@ -193,6 +202,7 @@ export default {
                 this.phone_no = lead.phone_no
                 this.description = lead.description
                 this.location = lead.location
+                this.profile_link = lead.profile_link
                 this.amount = lead.amount
                 this.qualified = !!lead.qualified
 
@@ -214,7 +224,8 @@ export default {
                 !this.email ||
                 !this.phone_no ||
                 !this.description ||
-                !this.location
+                !this.location ||
+                !this.profile_link
             ) {
                 toast.error('All fields are required')
                 return
@@ -227,6 +238,8 @@ export default {
                     phone_no: this.phone_no,
                     description: this.description,
                     location: this.location,
+                    profile_link: this.profile_link,
+
                 })
 
                 toast.success(res.data.message)

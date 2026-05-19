@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\ShiftController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Sales\LeadController;
+use App\Http\Controllers\Api\Sales\DashboardController  as SalesDashboardController;
+
 
 
 Route::post('register',[AuthController::class,'register']);
@@ -78,6 +80,11 @@ Route::get('/lead/{id}/edit',[LeadController::class,'edit']);
 Route::put('/lead/{id}/update',[LeadController::class,'update']);
 Route::put('/lead/{id}/status',[LeadController::class,'updateStatus']);
 Route::delete('/lead/{id}/delete',[LeadController::class,'delete']);
+
+
+//sales dashboard
+Route::get('/lead-analytics',[SalesDashboardController::class,'dashboard']);
+
 
 
 

@@ -176,7 +176,9 @@ class ShiftController extends Controller
     {
         try {
 
-            $employees = User::role('Employee')
+            $employees = User::whereDoesntHave('roles', function ($query) {
+                    $query->where('name', 'Admin');
+                })
                 ->where('status', 1)
                 ->select('id', 'name', 'depart_id')
                 ->with('roles:id,name')

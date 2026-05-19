@@ -44,28 +44,28 @@ const routes = [
     meta: { requiresAuth: true }, //  protected
     children: [
       { path: 'dashboard', component: Dashboard },
-      { path: 'add-user', component: AddUser },
-      { path: 'list-user', component: ListUser },
-      { path: '/edit-user/:id', component: EditUser },
+      { path: 'add-user', component: AddUser, meta: {permission: 'list_user'} },
+      { path: 'list-user', component: ListUser, meta: {permission: 'create_user'} },
+      { path: '/edit-user/:id', component: EditUser, meta: {permission: 'edit_user'} },
       { path: '/profile', component: ProfileInfo },
-      { path: '/list-permission', component: ListPermission },
-      { path: '/create-permission', component: createPermission },
-      { path: '/edit-permission/:id', component: editPermission },
+      { path: '/list-permission', component: ListPermission, meta: {permission: 'list_permission'}  },
+      { path: '/create-permission', component: createPermission, meta: {permission: 'create_permission'} },
+      { path: '/edit-permission/:id', component: editPermission, meta: {permission: 'edit_permission'} },
       //Roles
-      { path: '/list-role', component: ListRole },
-      { path: '/add-role', component: createRole },
-      { path: '/edit-role/:id', component: editRole },
+      { path: '/list-role', component: ListRole, meta: {permission: 'list_role'}},
+      { path: '/add-role', component: createRole, meta: {permission: 'create_role'} },
+      { path: '/edit-role/:id', component: editRole, meta: {permission: 'edit_role'} },
       //department
-      { path: '/list-department', component: ListDepartment },
-      { path: '/add-department', component: createDepartment },
-      { path: '/edit-department/:id', component: editDepartment },
+      { path: '/list-department', component: ListDepartment, meta: {permission: 'list_department'} },
+      { path: '/add-department', component: createDepartment, meta: {permission: 'create_department'} },
+      { path: '/edit-department/:id', component: editDepartment, meta: {permission: 'edit_department'} },
       //shift
-      { path: '/list-shift', component: ListShift },
-      { path: '/add-shift', component: createShift },
-      { path: '/edit-shift/:id', component: editShift },
-      { path: '/assign-shift', component: assignShift },
-      { path: '/list-assign-shift', component: listShift },
-      { path: '/edit-schedule/:id', component: editAssignShift },
+      { path: '/list-shift', component: ListShift, meta: {permission: 'list_shift'} },
+      { path: '/add-shift', component: createShift, meta: {permission: 'create_shift'} },
+      { path: '/edit-shift/:id', component: editShift, meta: {permission: 'edit_shift'} },
+      { path: '/assign-shift', component: assignShift, meta: {permission: 'create_assign_shift'} },
+      { path: '/list-assign-shift', component: listShift, meta: {permission: 'list_assign_shift'} },
+      { path: '/edit-schedule/:id', component: editAssignShift, meta: {permission: 'edit_assign_shift'} },
 
 
 
@@ -103,6 +103,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const role = localStorage.getItem('role')
+  const permissions = JSON.parse(
+    localStorage.getItem('permissions') || '[]'
+  )
 
   //  Not logged in → block protected routes
   if (to.meta.requiresAuth && !token) {
@@ -140,6 +143,22 @@ router.beforeEach((to, from, next) => {
     }
 
     return next('/dashboard')
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Permission Check
+  |--------------------------------------------------------------------------
+  */
+  if (to.meta.permission) {
+
+    const hasPermission = permissions.includes(
+      to.meta.permission
+    )
+
+    if (!hasPermission) {
+      return next('/dashboard')
+    }
   }
 
   next()

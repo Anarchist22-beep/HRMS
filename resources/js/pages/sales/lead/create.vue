@@ -69,6 +69,13 @@
                                     <textarea class="form-control" v-model="location" rows="2"
                                         placeholder="Enter location"></textarea>
                                 </div>
+                                 <!-- Profile Link -->
+
+                                <div class="mb-3">
+                                    <label class="form-label">Profile Link</label>
+                                    <textarea class="form-control" v-model="profile_link" rows="2"
+                                        placeholder="Enter Profile Link"></textarea>
+                                </div>
 
 
 
@@ -113,6 +120,7 @@ export default {
             phone_no: '',
             description: '',
             location: '',
+            profile_link: '',
 
         }
     },
@@ -130,7 +138,8 @@ export default {
                 !this.email ||
                 !this.phone_no ||
                 !this.description ||
-                !this.location
+                !this.location ||
+                !this.profile_link
             ) {
                 toast.error('All fields are required')
                 return
@@ -143,6 +152,8 @@ export default {
                     phone_no: this.phone_no,
                     description: this.description,
                     location: this.location,
+                    profile_link: this.profile_link
+
                 })
 
                 toast.success(res.data.message)
@@ -153,6 +164,7 @@ export default {
                 this.phone_no = ''
                 this.description = ''
                 this.location = ''
+                this.profile_link = ''
 
                 this.$router.push({ path: '/sales/list-lead' })
 

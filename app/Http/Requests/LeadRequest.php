@@ -10,7 +10,7 @@ class LeadRequest extends ApiRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    
+
 
     /**
      * Get the validation rules that apply to the request.
@@ -26,6 +26,7 @@ class LeadRequest extends ApiRequest
             'phone_no'=>'required',
             'description'=>'required',
             'location'=>'required',
+            'profile_link'=>'nullable'
         ];
     }
 }

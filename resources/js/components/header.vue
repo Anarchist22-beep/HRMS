@@ -6,6 +6,7 @@
     <!--begin::Container-->
     <div class="container-fluid">
       <!--begin::Start Navbar Links-->
+      <router-link to="/" class="navbar-brand ms-2 me-3">HRMS</router-link>
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">

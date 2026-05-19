@@ -25,19 +25,19 @@ class LeadController extends Controller
 
             $query = Lead::query();
 
-            
+
             if ($user->hasRole('Sales')) {
                 $query->where('user_id', $user->id);
             }
 
             // Admin sees everything (no restriction)
 
-          
+
             if (!is_null($qualified)) {
                 $query->where('qualified', filter_var($qualified, FILTER_VALIDATE_BOOLEAN));
             }
 
-          
+
             if ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -47,10 +47,10 @@ class LeadController extends Controller
                 });
             }
 
-          
+
             $query->orderBy('id', 'desc');
 
-           
+
             if ($all) {
                 $leads = $query->get();
             } else {
@@ -78,7 +78,8 @@ class LeadController extends Controller
                 'phone_no'=>$request->phone_no,
                 'description'=>$request->description,
                 'location'=>$request->location,
-                'user_id'=>$user->id
+                'user_id'=>$user->id,
+                'profile_link'=>$request->profile_link
              ]);
 
              return ApiResponse::success([
@@ -123,14 +124,15 @@ class LeadController extends Controller
                 'phone_no'=>$request->phone_no,
                 'description'=>$request->description,
                 'location'=>$request->location,
-                'user_id'=>$user->id
+                'user_id'=>$user->id,
+                'profile_link'=>$request->profile_link
             ]);
 
             return ApiResponse::success([
                 'status'=>'success',
                 'data'=>$lead,
                 'message'=>'lead updated successfully'
-                
+
 
             ]);
 
