@@ -46,33 +46,33 @@ const routes = [
     component: Layout,
     meta: { requiresAuth: true }, //  protected
     children: [
-      { path: 'dashboard', component: Dashboard },
-      { path: 'add-user', component: AddUser, meta: {permission: 'list_user'} },
-      { path: 'list-user', component: ListUser, meta: {permission: 'create_user'} },
-      { path: '/edit-user/:id', component: EditUser, meta: {permission: 'edit_user'} },
-      { path: '/profile', component: ProfileInfo },
-      { path: '/list-permission', component: ListPermission, meta: {permission: 'list_permission'}  },
-      { path: '/create-permission', component: createPermission, meta: {permission: 'create_permission'} },
-      { path: '/edit-permission/:id', component: editPermission, meta: {permission: 'edit_permission'} },
+      { path: 'dashboard', component: Dashboard, meta:{title: 'Dashboard - HRMS'} },
+      { path: 'add-user', component: AddUser, meta: {permission: 'list_user',title: 'Dashboard - User'} },
+      { path: 'list-user', component: ListUser, meta: {permission: 'create_user',title: 'Dashboard - User'} },
+      { path: '/edit-user/:id', component: EditUser, meta: {permission: 'edit_user',title: 'Dashboard - User'} },
+      { path: '/profile', component: ProfileInfo, meta:{title: 'Dashboard - Profile'} },
+      { path: '/list-permission', component: ListPermission, meta: {permission: 'list_permission',title: 'Dashboard - Roles & Permission'}  },
+      { path: '/create-permission', component: createPermission, meta: {permission: 'create_permission',title: 'Dashboard - Roles & Permission'} },
+      { path: '/edit-permission/:id', component: editPermission, meta: {permission: 'edit_permission',title: 'Dashboard - Roles & Permission'} },
       //Roles
-      { path: '/list-role', component: ListRole, meta: {permission: 'list_role'}},
-      { path: '/add-role', component: createRole, meta: {permission: 'create_role'} },
-      { path: '/edit-role/:id', component: editRole, meta: {permission: 'edit_role'} },
+      { path: '/list-role', component: ListRole, meta: {permission: 'list_role',title: 'Dashboard - Roles & Permission'}},
+      { path: '/add-role', component: createRole, meta: {permission: 'create_role',title: 'Dashboard - Roles & Permission'} },
+      { path: '/edit-role/:id', component: editRole, meta: {permission: 'edit_role',title: 'Dashboard - Roles & Permission'} },
       //department
-      { path: '/list-department', component: ListDepartment, meta: {permission: 'list_department'} },
-      { path: '/add-department', component: createDepartment, meta: {permission: 'create_department'} },
-      { path: '/edit-department/:id', component: editDepartment, meta: {permission: 'edit_department'} },
+      { path: '/list-department', component: ListDepartment, meta: {permission: 'list_department',title: 'Dashboard - Departments'} },
+      { path: '/add-department', component: createDepartment, meta: {permission: 'create_department',title: 'Dashboard - Departments'} },
+      { path: '/edit-department/:id', component: editDepartment, meta: {permission: 'edit_department',title: 'Dashboard - Departments'} },
       //shift
-      { path: '/list-shift', component: ListShift, meta: {permission: 'list_shift'} },
-      { path: '/add-shift', component: createShift, meta: {permission: 'create_shift'} },
-      { path: '/edit-shift/:id', component: editShift, meta: {permission: 'edit_shift'} },
-      { path: '/assign-shift', component: assignShift, meta: {permission: 'create_assign_shift'} },
-      { path: '/list-assign-shift', component: listShift, meta: {permission: 'list_assign_shift'} },
-      { path: '/edit-schedule/:id', component: editAssignShift, meta: {permission: 'edit_assign_shift'} },
+      { path: '/list-shift', component: ListShift, meta: {permission: 'list_shift',title: 'Dashboard - Shifts'} },
+      { path: '/add-shift', component: createShift, meta: {permission: 'create_shift',title: 'Dashboard - Shifts'} },
+      { path: '/edit-shift/:id', component: editShift, meta: {permission: 'edit_shift',title: 'Dashboard - Shifts'} },
+      { path: '/assign-shift', component: assignShift, meta: {permission: 'create_assign_shift',title: 'Dashboard - Shifts'} },
+      { path: '/list-assign-shift', component: listShift, meta: {permission: 'list_assign_shift',title: 'Dashboard - Shifts'} },
+      { path: '/edit-schedule/:id', component: editAssignShift, meta: {permission: 'edit_assign_shift',title: 'Dashboard - Shifts'} },
       //project
-      { path: '/list-project', component: ListProject, meta: {permission: 'list_project'} },
-      { path: '/add-project', component: createProject, meta: {permission: 'create_project'} },
-      { path: '/edit-project/:id', component: EditProject, meta: {permission: 'edit_project'} },
+      { path: '/list-project', component: ListProject, meta: {permission: 'list_project',title: 'Dashboard - Project'} },
+      { path: '/add-project', component: createProject, meta: {permission: 'create_project',title: 'Dashboard - Project'} },
+      { path: '/edit-project/:id', component: EditProject, meta: {permission: 'edit_project',title: 'Dashboard - Project'} },
 
 
 
@@ -90,11 +90,11 @@ const routes = [
       role: 'Sales'
     },
     children: [
-      { path: 'dashboard', component: SalesDashboard },
-      { path: 'profile', component: ProfileInfo },
-      { path: 'list-lead', component: ListLead },
-      { path: 'add-lead', component: AddLead },
-      { path: 'edit-lead/:id', component: editLead }
+      { path: 'dashboard', component: SalesDashboard, meta:{title: 'Dashboard - Sales'} },
+      { path: 'profile', component: ProfileInfo, meta:{title: 'Dashboard - Sales'} },
+      { path: 'list-lead', component: ListLead, meta:{title: 'Dashboard - Sales'} },
+      { path: 'add-lead', component: AddLead, meta:{title: 'Dashboard - Sales'} },
+      { path: 'edit-lead/:id', component: editLead, meta:{title: 'Dashboard - Sales'} }
 
 
 
@@ -105,6 +105,13 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+
+  document.title = to.meta.title || 'HRMS'
+
+  next()
 })
 
 

@@ -245,7 +245,7 @@ export default {
                 this.$router.push({ path: '/list-project' })
 
             } catch (err) {
-                console.log(err.response) // 👈 IMPORTANT DEBUG
+                console.log(err.response) //  IMPORTANT DEBUG
                 toast.error(err.response?.data?.message || 'Failed to update project')
             }
         }
