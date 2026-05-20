@@ -22,6 +22,9 @@ import editShift from './pages/shift/edit.vue'
 import assignShift from './pages/shift/assign_shift.vue'
 import listShift from './pages/shift/list_assign_shift.vue'
 import editAssignShift from './pages/shift/edit_assign_shift.vue'
+import ListProject from './pages/project/index.vue'
+import createProject from './pages/project/create.vue'
+import EditProject from './pages/project/edit.vue'
 
 //sales
 import SaleLayout from './pages/sales-layouts/layout.vue'
@@ -66,6 +69,11 @@ const routes = [
       { path: '/assign-shift', component: assignShift, meta: {permission: 'create_assign_shift'} },
       { path: '/list-assign-shift', component: listShift, meta: {permission: 'list_assign_shift'} },
       { path: '/edit-schedule/:id', component: editAssignShift, meta: {permission: 'edit_assign_shift'} },
+      //project
+      { path: '/list-project', component: ListProject, meta: {permission: 'list_project'} },
+      { path: '/add-project', component: createProject, meta: {permission: 'create_project'} },
+      { path: '/edit-project/:id', component: EditProject, meta: {permission: 'edit_project'} },
+
 
 
 

@@ -42,6 +42,12 @@ const isShiftRoute = computed(() => {
 
 })
 
+const isProjectRoute = computed(() =>{
+  return route.path.startsWith('/list-project')
+  return route.path.startsWith('/add-project')
+  
+})
+
 //permissions
 const canViewUserMenu = computed(() => {
   return hasPermission('create_user') || hasPermission('list_user')
@@ -54,8 +60,14 @@ const canViewSettingsMenu = computed(() => {
     hasPermission('list_role')
 })
 
+
+
 const canViewDepartmentMenu = computed(() => {
   return hasPermission('create_department') || hasPermission('list_department')
+})
+
+const canViewProjectMenu = computed(() => {
+  return hasPermission('create_project') || hasPermission('list_project')
 })
 
 const canViewShiftMenu = computed(() => {
@@ -187,6 +199,38 @@ const canViewShiftMenu = computed(() => {
 
           </li>
 
+          <!-- project route -->
+           <li :class="['nav-item', { 'menu-open': openMenu === 'projects' || isProjectRoute }]" v-if="canViewProjectMenu">
+
+            <a href="#" class="nav-link" @click.prevent="toggleMenu('projects')">
+              <i class="nav-icon bi bi-file-earmark-fill"></i>
+              <p>
+                Project
+                <i class="nav-arrow bi bi-chevron-right"></i>
+              </p>
+            </a>
+
+            <ul class="nav nav-treeview" v-show="openMenu === 'projects' || isProjectRoute">
+              <li class="nav-item" v-if="hasPermission('create_project')">
+                <router-link to="/add-project" class="nav-link" active-class="active">
+                  <i class="nav-icon bi bi-circle"></i>
+                  <p>Add Project</p>
+                </router-link>
+              </li>
+
+              <li class="nav-item" v-if="hasPermission('list_project')">
+                <router-link to="/list-project" class="nav-link" active-class="active">
+                  <i class="nav-icon bi bi-circle"></i>
+                  <p>List Project</p>
+                </router-link>
+              </li>
+
+
+
+            </ul>
+
+          </li>
+
           <!-- shift route -->
           <li :class="['nav-item', { 'menu-open': openMenu === 'shifts' || isShiftRoute }]" v-if="canViewShiftMenu">
 
@@ -214,14 +258,14 @@ const canViewShiftMenu = computed(() => {
               </li>
 
 
-              <li class="nav-item" v-if="hasPermission('assign_shift')">
+              <li class="nav-item" v-if="hasPermission('create_assign_shift')">
                 <router-link to="/assign-shift" class="nav-link" active-class="active">
                   <i class="nav-icon bi bi-circle"></i>
                   <p>Assign Shift</p>
                 </router-link>
               </li>
 
-              <li class="nav-item" v-if="hasPermission('assign_shift')">
+              <li class="nav-item" v-if="hasPermission('list_assign_shift')">
                 <router-link to="/list-assign-shift" class="nav-link" active-class="active">
                   <i class="nav-icon bi bi-circle"></i>
                   <p>List Assign Shift</p>

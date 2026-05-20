@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\DepartmentController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\ShiftController;
 use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\ProjectController;
 use App\Http\Controllers\Api\Sales\LeadController;
 use App\Http\Controllers\Api\Sales\DashboardController  as SalesDashboardController;
 
@@ -71,6 +72,19 @@ Route::get('/list-shift-schedule',[ShiftController::class,'list_schedule']);
 Route::get('/schedule/{id}/edit',[ShiftController::class,'schedule_edit']);
 Route::put('/schedule/{id}/update',[ShiftController::class,'update_schedule']);
 Route::delete('/schedule/{id}/delete',[ShiftController::class,'delete_schedule']);
+
+//projects
+Route::get('/projects-list',[ProjectController::class,'index']);
+Route::post('/project-store',[ProjectController::class,'store']);
+Route::get('/project/{id}/edit',[ProjectController::class,'edit']);
+Route::put('/project/{id}/update',[ProjectController::class,'update']);
+Route::delete('/project/{id}/delete',[ProjectController::class,'delete']);
+Route::put('/project/{id}/status',[ProjectController::class,'updateStatus']);
+
+
+
+
+
 
 
 //leads
