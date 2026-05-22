@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import Header from '../../components/header.vue'
+import Header from '../../components/sales/header.vue'
 import Sidebar from '../../components/sales/sidebar.vue'
 import Footer from '../../components/footer.vue'
 import { onMounted, nextTick } from 'vue'  //  ADD THIS

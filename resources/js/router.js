@@ -32,6 +32,7 @@ import SalesDashboard from './pages/sales/Dashboard.vue'
 import ListLead from './pages/sales/lead/index.vue'
 import AddLead from './pages/sales/lead/create.vue'
 import editLead from './pages/sales/lead/edit.vue'
+import salesProfileEdit from './pages/sales/profile/edit.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -91,7 +92,7 @@ const routes = [
     },
     children: [
       { path: 'dashboard', component: SalesDashboard, meta:{title: 'Dashboard - Sales'} },
-      { path: 'profile', component: ProfileInfo, meta:{title: 'Dashboard - Sales'} },
+      { path: 'profile', component: salesProfileEdit, meta:{title: 'Dashboard - Profile'} },
       { path: 'list-lead', component: ListLead, meta:{title: 'Dashboard - Sales'} },
       { path: 'add-lead', component: AddLead, meta:{title: 'Dashboard - Sales'} },
       { path: 'edit-lead/:id', component: editLead, meta:{title: 'Dashboard - Sales'} }
