@@ -38,7 +38,7 @@ const routes = [
   {
     path: '/login',
     component: Login,
-    meta: { guest: true } //  only for non-logged users
+    meta: { guest: true,title: 'HRMS-Login' } //  only for non-logged users
   },
 
   {
