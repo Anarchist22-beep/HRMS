@@ -10,6 +10,9 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import 'vue3-easy-data-table/dist/style.css'
 import 'vue-toastification/dist/index.css'
+import '@vueform/multiselect/themes/default.css'
+import VueTelInput from 'vue-tel-input'
+import 'vue-tel-input/vue-tel-input.css'
 
 
 
@@ -45,6 +48,7 @@ const app = createApp(App)
 app.use(router)
 app.use(VueApexCharts)
 app.use(Toast) //  enable toast globally
+app.use(VueTelInput)
 
 /*  OPTIONAL: make axios global (so no import needed) */
 app.config.globalProperties.$axios = axios

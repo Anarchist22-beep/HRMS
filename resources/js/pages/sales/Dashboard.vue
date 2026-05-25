@@ -22,6 +22,32 @@
         <div class="container-fluid">
 
             <div class="row">
+                <div class="row mb-3">
+
+                    <div class="col-md-3">
+                        <select v-model="selectedYear" class="form-control">
+                            <option v-for="y in yearsList" :key="y" :value="y">
+                                {{ y }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select v-model="selectedMonth" class="form-control">
+                            <option value="">All Months</option>
+                            <option v-for="m in monthsList" :key="m.id" :value="m.id">
+                                {{ m.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button class="btn btn-success w-100" @click="applyFilter">
+                            Apply Filter
+                        </button>
+                    </div>
+
+                </div>
 
                 <!-- Total Leads Chart -->
                 <div class="col-md-12">
@@ -130,6 +156,23 @@ const months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ]
+const selectedYear = ref(new Date().getFullYear())
+const selectedMonth = ref('')
+const monthsList = [
+    { id: 1, name: 'January' },
+    { id: 2, name: 'February' },
+    { id: 3, name: 'March' },
+    { id: 4, name: 'April' },
+    { id: 5, name: 'May' },
+    { id: 6, name: 'June' },
+    { id: 7, name: 'July' },
+    { id: 8, name: 'August' },
+    { id: 9, name: 'September' },
+    { id: 10, name: 'October' },
+    { id: 11, name: 'November' },
+    { id: 12, name: 'December' }
+]
+const yearsList = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033]
 
 const fetchDashboardStats = async () => {
     try {
@@ -186,6 +229,35 @@ const fetchDashboardStats = async () => {
     } catch (error) {
         console.error(error)
         toast.error('Failed to fetch dashboard data')
+    }
+}
+const applyFilter = async () => {
+    const response = await axios.get('/lead-analytics', {
+        params: {
+            year: selectedYear.value,
+            month: selectedMonth.value
+        }
+    })
+
+    const data = response.data.data
+
+    earningsChart.value = {
+        labels: monthsList.map(m => m.name),
+        datasets: [{
+            label: 'Earnings',
+            data: data.monthly_earnings,
+            backgroundColor: '#4CAF50'
+        }]
+    }
+
+    totalLeadsChart.value = {
+        labels: monthsList.map(m => m.name),
+        datasets: [{
+            label: 'Total Leads',
+            data: data.monthly_leads,
+            borderColor: '#FF9800',
+            backgroundColor: '#FF9800'
+        }]
     }
 }
 

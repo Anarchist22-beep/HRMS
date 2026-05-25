@@ -52,8 +52,18 @@
 
 
                                 <div class="mb-3">
+                                    <label class="form-label">Country</label>
+
+                                    <Multiselect v-model="country_id" :options="countries" label="countryName"
+                                        valueProp="id" placeholder="Select Country" searchable />
+                                </div>
+
+                                <div class="mb-3">
                                     <label class="form-label">Phone No:</label>
-                                    <input type="number" class="form-control" v-model="phone_no" />
+
+                                    <vue-tel-input v-model="phone_no" mode="international" :autoDefaultCountry="false"
+                                        :defaultCountry="selectedCountryCode"
+                                        :preferred-countries="['PK', 'US', 'AE']" />
                                 </div>
 
                                 <!-- Description -->
@@ -148,8 +158,12 @@
 
 <script>
 import { useToast } from 'vue-toastification'
+import Multiselect from '@vueform/multiselect'
 
 export default {
+    components: {
+        Multiselect
+    },
     data() {
         return {
             id: null,
@@ -160,13 +174,21 @@ export default {
             location: '',
             profile_link: '',
             amount: '',
-            qualified: false
+            qualified: false,
+
+            countries: [],
+            country_id: ''
         }
     },
 
     computed: {
         permissions() {
             return JSON.parse(localStorage.getItem('permissions') || '[]')
+        },
+        selectedCountryCode() {
+            if (!this.country_id || !this.countries.length) return 'PK'
+            const country = this.countries.find(c => c.id === this.country_id)
+            return country?.countryCode || 'PK'
         }
     },
 
@@ -205,6 +227,7 @@ export default {
                 this.profile_link = lead.profile_link
                 this.amount = lead.amount
                 this.qualified = !!lead.qualified
+                this.country_id = lead.country_id
 
             } catch (err) {
                 toast.error('Failed to load lead')
@@ -239,6 +262,7 @@ export default {
                     description: this.description,
                     location: this.location,
                     profile_link: this.profile_link,
+                    country_id: this.country_id,
 
                 })
 
@@ -248,6 +272,15 @@ export default {
 
             } catch (err) {
                 toast.error(err.response?.data?.message || 'Update failed')
+            }
+        },
+
+        async getCountries() {
+            try {
+                const res = await this.$axios.get('/get-countries')
+                this.countries = res.data.data.data
+            } catch (error) {
+                console.log(error)
             }
         },
 
@@ -278,8 +311,9 @@ export default {
         }
     },
 
-    mounted() {
-        this.getLead()
+    async mounted() {
+        await this.getCountries()
+        await this.getLead()
     }
 }
 </script>

@@ -94,6 +94,8 @@ Route::get('/lead/{id}/edit',[LeadController::class,'edit']);
 Route::put('/lead/{id}/update',[LeadController::class,'update']);
 Route::put('/lead/{id}/status',[LeadController::class,'updateStatus']);
 Route::delete('/lead/{id}/delete',[LeadController::class,'delete']);
+Route::get('/get-countries',[LeadController::class,'getcountries']);
+Route::get('/lead-export', [LeadController::class, 'export']);
 
 
 //sales dashboard

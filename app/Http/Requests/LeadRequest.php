@@ -26,7 +26,8 @@ class LeadRequest extends ApiRequest
             'phone_no'=>'required',
             'description'=>'required',
             'location'=>'required',
-            'profile_link'=>'nullable'
+            'profile_link'=>'nullable',
+            'country_id'=>'required'
         ];
     }
 }

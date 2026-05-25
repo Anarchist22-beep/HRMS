@@ -12,91 +12,90 @@ class DashboardController extends Controller
 {
     //
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         try {
 
             /*
         |--------------------------------------------------------------------------
-        | Initialize Monthly Arrays
+        | Filters
         |--------------------------------------------------------------------------
         */
-
-            $monthlyEarnings = array_fill(0, 12, 0);
-
-            $qualifiedLeads = array_fill(0, 12, 0);
-            $totalLeads = array_fill(0, 12, 0);
-
+            $year  = $request->get('year', Carbon::now()->year);
+            $month = $request->get('month'); // optional (1–12 or null)
 
             /*
         |--------------------------------------------------------------------------
-        | Monthly Earnings
+        | Base Queries
         |--------------------------------------------------------------------------
         */
+            $earningsQuery = Lead::selectRaw("
+            MONTH(created_at) as month,
+            SUM(amount) as total
+        ")->whereYear('created_at', $year);
 
-            $earnings = Lead::selectRaw("
-                MONTH(created_at) as month,
-                SUM(amount) as total
-            ")
-                ->whereYear('created_at', Carbon::now()->year)
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
-
-            foreach ($earnings as $earning) {
-
-                $monthIndex = $earning->month - 1;
-
-                $monthlyEarnings[$monthIndex] = (float) $earning->total;
-            }
-
-            /*
-        |--------------------------------------------------------------------------
-        | Qualified Leads Per Month
-        |--------------------------------------------------------------------------
-        */
-
-            $leads = Lead::selectRaw("
-                MONTH(created_at) as month,
-                COUNT(*) as total
-            ")
+            $qualifiedQuery = Lead::selectRaw("
+            MONTH(created_at) as month,
+            COUNT(*) as total
+        ")
                 ->where('qualified', true)
-                ->whereYear('created_at', Carbon::now()->year)
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get();
+                ->whereYear('created_at', $year);
 
-            foreach ($leads as $lead) {
+            $totalLeadsQuery = Lead::selectRaw("
+            MONTH(created_at) as month,
+            COUNT(*) as total
+        ")->whereYear('created_at', $year);
 
-                $monthIndex = $lead->month - 1;
-
-                $qualifiedLeads[$monthIndex] = $lead->total;
+            /*
+        |--------------------------------------------------------------------------
+        | Optional Month Filter
+        |--------------------------------------------------------------------------
+        */
+            if (!empty($month)) {
+                $earningsQuery->whereMonth('created_at', $month);
+                $qualifiedQuery->whereMonth('created_at', $month);
+                $totalLeadsQuery->whereMonth('created_at', $month);
             }
 
             /*
         |--------------------------------------------------------------------------
-        | Total Leads This Year
+        | Execute Queries
         |--------------------------------------------------------------------------
         */
-
-            $yearlyLeads = Lead::whereYear(
-                'created_at',
-                Carbon::now()->year
-            )
-                ->count();
-
-            $leadsPerMonth = Lead::selectRaw("
-        MONTH(created_at) as month,
-        COUNT(*) as total
-    ")
-                ->whereYear('created_at', Carbon::now()->year)
+            $earnings = $earningsQuery
                 ->groupBy('month')
                 ->orderBy('month')
                 ->get();
 
-            foreach ($leadsPerMonth as $item) {
-                $monthIndex = $item->month - 1;
-                $totalLeads[$monthIndex] = (int) $item->total;
+            $qualifiedLeads = $qualifiedQuery
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            $totalLeads = $totalLeadsQuery
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            /*
+        |--------------------------------------------------------------------------
+        | Format to 12-month arrays (important for charts)
+        |--------------------------------------------------------------------------
+        */
+            $monthlyEarnings = array_fill(0, 12, 0);
+            $qualifiedData   = array_fill(0, 12, 0);
+            $totalLeadsData  = array_fill(0, 12, 0);
+
+            foreach ($earnings as $item) {
+                $monthlyEarnings[$item->month - 1] = (float) $item->total;
+            }
+
+            foreach ($qualifiedLeads as $item) {
+                $qualifiedData[$item->month - 1] = (int) $item->total;
+            }
+
+            foreach ($totalLeads as $item) {
+                $totalLeadsData[$item->month - 1] = (int) $item->total;
             }
 
             /*
@@ -104,12 +103,11 @@ class DashboardController extends Controller
         | Response
         |--------------------------------------------------------------------------
         */
-
             return ApiResponse::success([
                 'monthly_earnings' => $monthlyEarnings,
-                'qualified_leads'  => $qualifiedLeads,
-                'yearly_leads'     => $yearlyLeads,
-                'monthly_leads'    => $totalLeads,
+                'qualified_leads'  => $qualifiedData,
+                'monthly_leads'    => $totalLeadsData,
+                'yearly_leads'     => Lead::whereYear('created_at', $year)->count(),
             ], 'Dashboard data fetched successfully');
         } catch (\Exception $e) {
 

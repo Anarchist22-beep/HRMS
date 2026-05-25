@@ -50,10 +50,19 @@
 
                                 </div>
 
+                                <div class="mb-3">
+                                    <label class="form-label">Country</label>
+
+                                    <Multiselect v-model="country_id" :options="countries" label="countryName"
+                                        valueProp="id" placeholder="Select Country" searchable />
+                                </div>
+
 
                                 <div class="mb-3">
                                     <label class="form-label">Phone No:</label>
-                                    <input type="number" class="form-control" v-model="phone_no" />
+
+                                    <vue-tel-input v-model="phone_no" mode="international"
+                                        :preferred-countries="['PK', 'US', 'AE']" placeholder="Enter phone number" />
                                 </div>
 
                                 <!-- Description -->
@@ -69,7 +78,7 @@
                                     <textarea class="form-control" v-model="location" rows="2"
                                         placeholder="Enter location"></textarea>
                                 </div>
-                                 <!-- Profile Link -->
+                                <!-- Profile Link -->
 
                                 <div class="mb-3">
                                     <label class="form-label">Profile Link</label>
@@ -110,9 +119,16 @@
 
 
 <script>
+
 import { useToast } from 'vue-toastification'
+import Multiselect from '@vueform/multiselect'
+
 
 export default {
+    components: {
+        Multiselect
+    },
+
     data() {
         return {
             name: '',
@@ -122,14 +138,31 @@ export default {
             location: '',
             profile_link: '',
 
+            countries: [],
+            country_id: ''
         }
+    },
+
+    async mounted() {
+        await this.getCountries()
     },
 
     methods: {
 
+        // GET COUNTRIES
+        async getCountries() {
+            try {
+                const res = await this.$axios.get('/get-countries')
 
+                // FIX: correct nested response
+                this.countries = res.data.data.data
 
-        //  Store lead
+            } catch (error) {
+                console.log(error)
+            }
+        },
+
+        // STORE LEAD
         async storeLead() {
             const toast = useToast()
 
@@ -139,7 +172,8 @@ export default {
                 !this.phone_no ||
                 !this.description ||
                 !this.location ||
-                !this.profile_link
+                !this.profile_link ||
+                !this.country_id
             ) {
                 toast.error('All fields are required')
                 return
@@ -152,8 +186,8 @@ export default {
                     phone_no: this.phone_no,
                     description: this.description,
                     location: this.location,
-                    profile_link: this.profile_link
-
+                    profile_link: this.profile_link,
+                    country_id: this.country_id
                 })
 
                 toast.success(res.data.message)
@@ -165,6 +199,7 @@ export default {
                 this.description = ''
                 this.location = ''
                 this.profile_link = ''
+                this.country_id = ''
 
                 this.$router.push({ path: '/sales/list-lead' })
 
@@ -174,4 +209,5 @@ export default {
         }
     }
 }
+
 </script>

@@ -8,11 +8,15 @@ class Lead extends Model
 {
     //
 
-    protected $fillable = ['name','email','phone_no','description','location','amount','qualified','user_id','profile_link'];
+    protected $fillable = ['name','email','phone_no','description','location','amount','qualified','user_id','profile_link','country_id'];
 
 
     public function users()
     {
         return $this->belongsTo(User::class,'user_id');
+    }
+
+    public function countries(){
+        return $this->belongsTo(AppCountryDetail::class,'country_id');
     }
 }

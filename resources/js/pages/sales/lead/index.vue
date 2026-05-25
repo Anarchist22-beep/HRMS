@@ -32,6 +32,45 @@
 
                         <!-- Body -->
                         <div class="card-body">
+                            <div class="row align-items-end">
+
+                                <!-- Start Date -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Start Date</label>
+
+                                    <input type="date" class="form-control" v-model="start_date" />
+                                </div>
+
+                                <!-- End Date -->
+                                <div class="col-md-4">
+                                    <label class="form-label">End Date</label>
+
+                                    <input type="date" class="form-control" v-model="end_date" />
+                                </div>
+
+                                <!-- Export Button -->
+                                <div class="col-md-4">
+
+                                    <div class="d-flex gap-2">
+
+                                        <!-- Export Button -->
+                                        <button class="btn btn-success w-50" v-if="hasPermission('export_lead_data')"
+                                            @click="exportCSV">
+                                            <i class="bi bi-file-earmark-excel"></i>
+                                        </button>
+
+                                        <!-- Filter Button -->
+                                        <button class="btn btn-info w-50" @click="applyFilter">
+                                            <i class="bi bi-funnel"></i>
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
                             <EasyDataTable :headers="headers" :items="items" :server-options="serverOptions"
                                 :server-items-length="serverItemsLength" @update:server-options="loadFromServer">
                                 <template #item-qualified="{ qualified }">
@@ -100,6 +139,15 @@ const search = ref("")
 const showModal = ref(false)
 const deleteId = ref(null)
 const router = useRouter() //  ADD THIS
+const start_date = ref('')
+const end_date = ref('')
+const permissions = computed(() => {
+    return JSON.parse(localStorage.getItem('permissions') || '[]')
+})
+
+const hasPermission = (permission) => {
+    return permissions.value.includes(permission)
+}
 
 const serverOptions = ref({
     page: 1,
@@ -135,7 +183,9 @@ const loadFromServer = async (options) => {
             params: {
                 page: options.page,
                 per_page: options.rowsPerPage,
-                search: search.value
+                search: search.value,
+                start_date: start_date.value,   //  ADD
+                end_date: end_date.value 
             }
         })
 
@@ -148,6 +198,46 @@ const loadFromServer = async (options) => {
     } catch (error) {
         console.error("Error fetching leads:", error)
     }
+}
+
+const exportCSV = async () => {
+
+    try {
+
+        const response = await axios.get('/lead-export', {
+            params: {
+                start_date: start_date.value,
+                end_date: end_date.value
+            },
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(
+            new Blob([response.data])
+        )
+
+        const link = document.createElement('a')
+
+        link.href = url
+
+        link.setAttribute('download', 'leads.csv')
+
+        document.body.appendChild(link)
+
+        link.click()
+
+    } catch (error) {
+
+        console.error(error)
+
+    }
+}
+
+const applyFilter = () => {
+    loadFromServer({
+        page: 1,
+        rowsPerPage: serverOptions.value.rowsPerPage
+    })
 }
 //search
 watch(search, debouncedSearch)
