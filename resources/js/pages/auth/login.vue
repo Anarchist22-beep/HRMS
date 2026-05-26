@@ -2,7 +2,7 @@
   <div class="login-page bg-body-secondary">
     <div class="login-box">
       <div class="login-logo">
-        <a href="#"><b>Admin</b>LTE</a>
+        <a href="#"><b>Softonic</b>Digital</a>
       </div>
 
       <p v-if="error" class="text-danger text-center">{{ error }}</p>

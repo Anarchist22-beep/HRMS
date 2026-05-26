@@ -23,7 +23,8 @@ class ProjecRequest extends ApiRequest
             //
             'name'=>'required',
             'description'=>'required',
-            'document' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'document' => 'required|array',
+            'document.*' => 'file|mimes:pdf,doc,docx|max:10240',
         ];
     }
 }

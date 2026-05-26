@@ -7,7 +7,14 @@
         <!--begin::Copyright-->
         <strong>
           Copyright &copy; 2014-2024&nbsp;
-          <a href="#" class="text-decoration-none">AdminLTE.io VUEJS</a>.
+          <a 
+    href="https://softonicdigital.com" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    class="text-decoration-none"
+  >
+    Softonic Digital
+  </a>.
         </strong>
         All rights reserved.
         <!--end::Copyright-->

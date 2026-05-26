@@ -53,30 +53,40 @@
 
                                 <!-- Document Upload -->
                                 <div class="mb-3">
-                                    <label class="form-label">Document</label>
+                                    <label class="form-label">Documents</label>
 
                                     <div class="border rounded p-4 text-center upload-box" @dragover.prevent
                                         @drop.prevent="handleDrop" @click="triggerFileInput" style="cursor: pointer;">
                                         <input type="file" ref="fileInput" class="d-none" @change="handleFileChange"
-                                            accept=".pdf,.doc,.docx" />
+                                            accept=".pdf,.doc,.docx" multiple />
 
-                                        <div v-if="!document">
+                                        <div v-if="documents.length === 0">
                                             <i class="bi bi-cloud-upload fs-1"></i>
-                                            <p class="mb-0">Drag & drop file here or click to upload</p>
-                                            <small class="text-muted">PDF, DOC, DOCX (Max 10MB)</small>
+                                            <p class="mb-0">Drag & drop files here or click to upload</p>
+                                            <small class="text-muted">PDF, DOC, DOCX (Max 10MB per file)</small>
                                         </div>
 
                                         <!-- Preview -->
-                                        <div v-else class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <i class="bi bi-file-earmark-text"></i>
-                                                {{ document.name }}
-                                            </div>
+                                        <div v-else class="text-start" @click.stop>
+                                            <div v-for="(file, index) in documents" :key="index"
+                                                class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded bg-light">
+                                                <div>
+                                                    <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                                                    <span class="fw-medium">{{ file.name }}</span>
+                                                    <small class="text-muted ms-2">({{ (file.size / 1024 / 1024).toFixed(2) }} MB)</small>
+                                                </div>
 
-                                            <button type="button" class="btn btn-sm btn-danger"
-                                                @click.stop="removeFile">
-                                                Remove
-                                            </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    @click.stop="removeFile(index)">
+                                                    <i class="bi bi-trash"></i> Remove
+                                                </button>
+                                            </div>
+                                            <div class="text-center mt-3">
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                    @click.stop="triggerFileInput">
+                                                    <i class="bi bi-plus-lg"></i> Add More Files
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -119,7 +129,7 @@ export default {
         return {
             name: '',
             description: '',
-            document: null, //  REQUIRED
+            documents: [], // Multiple documents array
 
         }
     },
@@ -135,22 +145,37 @@ export default {
         },
 
         handleFileChange(e) {
-            const file = e.target.files[0]
-            if (file) {
-                this.document = file
-            }
+            const files = Array.from(e.target.files)
+            this.addFiles(files)
         },
 
         handleDrop(e) {
-            const file = e.dataTransfer.files[0]
-            if (file) {
-                this.document = file
+            const files = Array.from(e.dataTransfer.files)
+            this.addFiles(files)
+        },
+
+        addFiles(files) {
+            const toast = useToast()
+            files.forEach(file => {
+                const ext = file.name.split('.').pop().toLowerCase()
+                if (['pdf', 'doc', 'docx'].includes(ext)) {
+                    if (file.size <= 10240 * 1024) {
+                        this.documents.push(file)
+                    } else {
+                        toast.error(`File is too large: ${file.name}. Max 10MB allowed.`)
+                    }
+                } else {
+                    toast.error(`Invalid file type: ${file.name}. Only PDF, DOC, and DOCX are allowed.`)
+                }
+            })
+            // Reset the input value so the same files can be re-selected if removed
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.value = null
             }
         },
 
-        removeFile() {
-            this.document = null
-            this.$refs.fileInput.value = null
+        removeFile(index) {
+            this.documents.splice(index, 1)
         },
 
         // ================= FETCH DATA =================
@@ -174,8 +199,8 @@ export default {
             const toast = useToast()
 
             // validation
-            if (!this.name || !this.description || !this.document) {
-                toast.error('Name, Description and Document are required')
+            if (!this.name || !this.description || this.documents.length === 0) {
+                toast.error('Name, Description and at least one Document are required')
                 return
             }
 
@@ -185,7 +210,11 @@ export default {
 
                 formData.append('name', this.name)
                 formData.append('description', this.description)
-                formData.append('document', this.document)
+                
+                // Append each file to document[] array
+                this.documents.forEach(file => {
+                    formData.append('document[]', file)
+                })
 
                 const res = await this.$axios.post('/project-store', formData, {
                     headers: {
@@ -198,7 +227,7 @@ export default {
                 // reset form
                 this.name = ''
                 this.description = ''
-                this.document = null
+                this.documents = []
 
                 if (this.$refs.fileInput) {
                     this.$refs.fileInput.value = null

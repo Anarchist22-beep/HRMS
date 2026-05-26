@@ -6,11 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
 use App\Models\Project;
+use App\Models\ProjectDocument;
+use App\Models\ProjectPayment;
 use App\Http\Requests\ProjecRequest;
 use App\Http\Requests\UpdateProjecRequest;
+use App\Http\Requests\UpdateProjectPaymentRequest;
 use App\Http\Requests\ProjectStatusUpdateRequest;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 
 class ProjectController extends Controller
@@ -52,26 +56,54 @@ class ProjectController extends Controller
     public function store(ProjecRequest $request)
     {
         try {
-            $documentPath = null;
-
-            // check if file exists
-            if ($request->hasFile('document')) {
-                $file = $request->file('document');
-
-                // store in: storage/app/public/projects
-                $documentPath = $file->store('projects', 'public');
-            }
+            // Create the project first
             $project = Project::create([
                 'name' => $request->name,
                 'description' => $request->description,
-                'document' => $documentPath,
-
             ]);
+
+            $firstDocumentPath = null;
+
+            // Check if document files exist
+            if ($request->hasFile('document')) {
+                $files = $request->file('document');
+                if (!is_array($files)) {
+                    $files = [$files];
+                }
+
+                // Subfolder named after the project slug
+                $subfolder = Str::slug($project->name);
+
+                foreach ($files as $index => $file) {
+                    // store in: storage/app/public/projects/{subfolder}
+                    $documentPath = $file->store('projects/' . $subfolder, 'public');
+
+                    // Save in project_documents table
+                    ProjectDocument::create([
+                        'document' => $documentPath,
+                        'project_id' => $project->id,
+                    ]);
+
+                    // Assign first document path for backward compatibility
+                    if ($index === 0) {
+                        $firstDocumentPath = $documentPath;
+                    }
+                }
+            }
+
+            if ($firstDocumentPath) {
+                $project->update([
+                    'document' => $firstDocumentPath,
+                ]);
+            }
+
+            // Eager load documents relation
+            $project->load('documents');
+
             return ApiResponse::success([
                 'status' => 'success',
                 'message' => 'project added successfully',
-                'data' => $project
-
+                'data' => new ProjectResource($project)
             ]);
         } catch (\Exception $e) {
             return ApiResponse::error(
@@ -84,12 +116,11 @@ class ProjectController extends Controller
     public function edit($id)
     {
         try {
-            $project = Project::find($id);
+            $project = Project::with(['documents', 'payments'])->findOrFail($id);
             return ApiResponse::success([
                 'project' => new ProjectResource($project)
-
             ], 'project fetched successfully');
-        } catch (\exception $e) {
+        } catch (\Exception $e) {
             return ApiResponse::error(
                 'Failed to fetch project: ' . $e->getMessage(),
                 500
@@ -100,35 +131,73 @@ class ProjectController extends Controller
     public function update($id, UpdateProjecRequest $request)
     {
         try {
-
             $project = Project::findOrFail($id);
 
-            $documentPath = $project->document; // keep old file by default
-
-            // if new file uploaded → replace
-            if ($request->hasFile('document')) {
-
-                // delete old file if exists
-                if ($project->document && Storage::disk('public')->exists($project->document)) {
-                    Storage::disk('public')->delete($project->document);
-                }
-
-                // store new file
-                $file = $request->file('document');
-                $documentPath = $file->store('projects', 'public');
-            }
-
-            // update project
+            // Update basic project info
             $project->update([
                 'name' => $request->name,
                 'description' => $request->description,
-                'document' => $documentPath,
+            ]);
+
+            // 1. Handle granular deletions of project documents
+            if ($request->has('deleted_document_ids')) {
+                $deletedIds = $request->input('deleted_document_ids');
+                if (!is_array($deletedIds)) {
+                    $deletedIds = json_decode($deletedIds, true) ?: [$deletedIds];
+                }
+
+                $documentsToDelete = ProjectDocument::whereIn('id', $deletedIds)
+                    ->where('project_id', $project->id)
+                    ->get();
+
+                foreach ($documentsToDelete as $doc) {
+                    if (Storage::disk('public')->exists($doc->document)) {
+                        Storage::disk('public')->delete($doc->document);
+                    }
+                    $doc->delete();
+                }
+            }
+
+            // 2. Handle uploading/appending new documents if any are selected
+            if ($request->hasFile('document')) {
+                $files = $request->file('document');
+                if (!is_array($files)) {
+                    $files = [$files];
+                }
+
+                $subfolder = Str::slug($project->name);
+
+                foreach ($files as $file) {
+                    $documentPath = $file->store('projects/' . $subfolder, 'public');
+
+                    ProjectDocument::create([
+                        'document' => $documentPath,
+                        'project_id' => $project->id,
+                    ]);
+                }
+            }
+
+            // 3. Ensure at least one active document remains
+            // Eager load documents and payments relationships
+            $project->load(['documents', 'payments']);
+
+            if ($project->documents->count() === 0) {
+                return ApiResponse::error(
+                    'At least one project document is required.',
+                    422
+                );
+            }
+
+            // 4. Keep primary project document column synchronized (always hold the path of the first document)
+            $firstDoc = $project->documents->first();
+            $project->update([
+                'document' => $firstDoc ? $firstDoc->document : null,
             ]);
 
             return ApiResponse::success([
                 'status' => 'success',
                 'message' => 'Project updated successfully',
-                'data' => $project
+                'data' => new ProjectResource($project)
             ]);
         } catch (\Exception $e) {
             return ApiResponse::error(
@@ -141,13 +210,23 @@ class ProjectController extends Controller
     public function delete($id)
     {
         try {
-            $project = Project::find($id);
+            $project = Project::findOrFail($id);
+
+            // Physically delete all project documents from storage
+            foreach ($project->documents as $doc) {
+                if (Storage::disk('public')->exists($doc->document)) {
+                    Storage::disk('public')->delete($doc->document);
+                }
+            }
+
+            // Also delete primary document from storage if exists
             if ($project->document && Storage::disk('public')->exists($project->document)) {
                 Storage::disk('public')->delete($project->document);
             }
 
-            // delete record
+            // Delete project record (DB cascade automatically deletes rows in project_documents)
             $project->delete();
+
             return ApiResponse::success([
                 'status' => 'success',
                 'message' => 'project deleted successfully'
@@ -182,4 +261,41 @@ class ProjectController extends Controller
 
         }
     }
+
+    public function updatePayments($id, UpdateProjectPaymentRequest $request)
+{
+    try {
+        $project = Project::findOrFail($id);
+
+        // Delete all existing payments for this project
+        // then re-insert fresh from the submitted rows
+        ProjectPayment::where('project_id', $project->id)->delete();
+
+        $payments = [];
+
+        foreach ($request->input('payments') as $row) {
+            $payments[] = ProjectPayment::create([
+                'project_id'      => $project->id,
+                'amount'          => $row['amount'],
+                'amount_paid'     => $row['amount_paid'],
+                'amount_received' => $row['amount_received'],
+            ]);
+        }
+
+        // Reload project with all relationships
+        $project->load(['documents', 'payments']);
+
+        return ApiResponse::success([
+            'status'   => 'success',
+            'message'  => 'Payments updated successfully.',
+            'data'     => new ProjectResource($project),
+        ]);
+
+    } catch (\Exception $e) {
+        return ApiResponse::error(
+            'Failed to update payments: ' . $e->getMessage(),
+            500
+        );
+    }
+}
 }

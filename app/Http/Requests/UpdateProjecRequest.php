@@ -23,7 +23,10 @@ class UpdateProjecRequest extends ApiRequest
             //
             'name'=>'required',
             'description'=>'required',
-            'document' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'document' => 'nullable|array',
+            'document.*' => 'file|mimes:pdf,doc,docx|max:10240',
+            'deleted_document_ids' => 'nullable|array',
+            'deleted_document_ids.*' => 'integer|exists:project_documents,id',
         ];
     }
 }

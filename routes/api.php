@@ -80,6 +80,7 @@ Route::get('/project/{id}/edit',[ProjectController::class,'edit']);
 Route::put('/project/{id}/update',[ProjectController::class,'update']);
 Route::delete('/project/{id}/delete',[ProjectController::class,'delete']);
 Route::put('/project/{id}/status',[ProjectController::class,'updateStatus']);
+Route::put('/project/{id}/payments',[ProjectController::class,'updatePayments']);
 
 
 
@@ -125,4 +126,5 @@ Route::get('/lead-analytics',[SalesDashboardController::class,'dashboard']);
 
 
 
+Route::post('project_payments', [App\Http\Controllers\Api\Admin\ProjectPaymentController::class, 'store']);
 });
